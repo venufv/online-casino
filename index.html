@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>LUXURY CASINO</title>
+    <style>
+        :root {
+            --bg-body: #07090c; --bg-card: #12161b; --bg-accent: #1e252d;
+            --gold: #ffb800; --green: #00ff59; --red: #ff3e3e; --text: #ffffff;
+        }
+        body { background: var(--bg-body); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
+        
+        /* Navbar con Home reale */
+        .navbar { height: 80px; background: #000; display: flex; justify-content: space-between; align-items: center; padding: 0 50px; border-bottom: 2px solid var(--gold); }
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .logo { font-size: 26px; font-weight: 900; color: var(--gold); letter-spacing: 4px; }
+        .btn-home { background: var(--bg-accent); border: 1px solid var(--gold); color: var(--gold); padding: 8px 15px; border-radius: 8px; cursor: pointer; display: none; font-weight: bold; }
+        .btn-home:hover { background: var(--gold); color: #000; }
+
+        .balance-box { background: #111; padding: 10px 20px; border-radius: 8px; border: 1px solid var(--gold); color: var(--gold); font-weight: bold; font-size: 18px; }
+
+        /* Schermate */
+        .screen { display: none; padding: 40px; height: calc(100vh - 160px); overflow-y: auto; }
+        .active-screen { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Lobby */
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; max-width: 1100px; margin: 0 auto; }
+        .game-card { background: var(--bg-card); border-radius: 15px; border: 1px solid var(--bg-accent); cursor: pointer; transition: 0.3s; text-align: center; padding-bottom: 20px; }
+        .game-card:hover { border-color: var(--gold); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(255,184,0,0.2); }
+        .card-icon { font-size: 55px; padding: 35px 0; background: #1a1f26; margin-bottom: 15px; }
+
+        /* Bank */
+        .bank-container { max-width: 400px; margin: 50px auto; background: var(--bg-card); padding: 40px; border-radius: 20px; border: 2px solid var(--gold); text-align: center; }
+        .bank-input { width: 85%; padding: 15px; background: #000; border: 1px solid var(--bg-accent); color: var(--gold); font-size: 24px; text-align: center; border-radius: 10px; margin-bottom: 20px; outline: none; }
+
+        /* Layout Tavolo */
+        .game-area { display: grid; grid-template-columns: 320px 1fr; gap: 30px; max-width: 1400px; margin: 0 auto; }
+        .sidebar { background: var(--bg-card); padding: 25px; border-radius: 15px; }
+        .table { background: radial-gradient(circle, #1a4d2e 0%, #081a0f 100%); border: 10px solid #3d2b1f; border-radius: 60px; position: relative; display: flex; flex-direction: column; align-items: center; padding: 40px; min-height: 520px; box-shadow: inset 0 0 100px #000; }
+
+        /* Animazione Roulette */
+        .roulette-wrap { position: relative; width: 250px; height: 250px; margin-bottom: 20px; display: none; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 10px solid #222; background: conic-gradient(#00ff59 0% 3%, #ff3e3e 3% 8%, #000 8% 13%, #ff3e3e 13% 18%, #000 18% 24%, #ff3e3e 24% 29%, #000 29% 35%, #ff3e3e 35% 40%, #000 40% 45%, #ff3e3e 45% 51%, #000 51% 56%, #ff3e3e 56% 62%, #000 62% 67%, #ff3e3e 67% 72%, #000 72% 78%, #ff3e3e 78% 83%, #000 83% 89%, #ff3e3e 89% 94%, #000 94% 100%); transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
+
+        /* Animazione Dadi */
+        .dice-wrap { display: none; gap: 20px; margin-bottom: 20px; }
+        .die { width: 70px; height: 70px; background: #fff; border-radius: 12px; color: #000; font-size: 35px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 4px 4px 10px rgba(0,0,0,0.5); }
+        .rolling { animation: dieRoll 0.15s infinite linear; }
+        @keyframes dieRoll { 0% { transform: translate(0,0) rotate(0); } 25% { transform: translate(5px,-5px) rotate(90deg); } 50% { transform: translate(-5px,5px) rotate(180deg); } 100% { transform: translate(0,0) rotate(360deg); } }
+
+        /* Bottoni */
+        .action-btn { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: 0.2s; }
+        .btn-gold { background: var(--gold); color: #000; }
+        .btn-green { background: var(--green); color: #000; }
+        .btn-blue { background: #3498db; color: #fff; }
+
+        /* Carte */
+        .card { width: 75px; height: 110px; background: #fff; border-radius: 8px; color: #000; position: relative; padding: 10px; font-weight: 900; border: 1px solid #ccc; font-size: 16px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+        .ace-mid { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 35px; }
+        
+        .result-msg { position: absolute; top: 40%; font-size: 60px; font-weight: 900; text-shadow: 0 0 20px #000; z-index: 100; text-align: center; width: 100%; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="nav-left">
+        <button class="btn-home" id="home-btn" onclick="showScreen('home-screen')">🏠 HOME</button>
+        <div class="logo">LUXURY CASINO</div>
+    </div>
+    <div style="display: flex; gap: 20px; align-items: center;">
+        <button class="btn-gold" style="width:auto; padding: 10px 20px;" onclick="showScreen('bank-screen')">BANK</button>
+        <div class="balance-box">$ <span id="balance-val">0</span></div>
+    </div>
+</div>
+
+<div id="home-screen" class="screen active-screen">
+    <div class="game-grid">
+        <div class="game-card" onclick="initGame('BJ')"><div class="card-icon">🃏</div><h3>BLACKJACK</h3></div>
+        <div class="game-card" onclick="initGame('ROU')"><div class="card-icon">🎡</div><h3>ROULETTE</h3></div>
+        <div class="game-card" onclick="initGame('BAC')"><div class="card-icon">💰</div><h3>BACCARAT</h3></div>
+        <div class="game-card" onclick="initGame('DICE')"><div class="card-icon">🎲</div><h3>DADI</h3></div>
+    </div>
+</div>
+
+<div id="bank-screen" class="screen">
+    <div class="bank-container">
+        <h2 style="color:var(--gold)">DEPOSITO PRECISIO</h2>
+        <input type="number" id="bank-input" class="bank-input" placeholder="0.00">
+        <button class="action-btn btn-green" onclick="deposit()">ACCREDITA</button>
+    </div>
+</div>
+
+<div id="game-view" class="screen">
+    <div class="game-area">
+        <div class="sidebar">
+            <h2 id="game-title" style="color:var(--gold)">TAVOLO</h2>
+            <div id="game-options"></div>
+            <label>PUNTATA ($)</label>
+            <input type="number" id="bet-field" class="bank-input" value="100" style="font-size:18px; width:90%">
+            <button class="action-btn btn-green" id="play-btn" onclick="handlePlay()">GIOCA</button>
+            <div id="bj-ctrls" style="display:none">
+                <button class="action-btn btn-blue" onclick="bjAction('hit')">CARTA</button>
+                <button class="action-btn" style="background:#e67e22; color:white" onclick="bjAction('stand')">STAI</button>
+                <button class="action-btn" style="background:var(--gold); color:black" id="double-btn" onclick="bjAction('double')">RADDOPPIA</button>
+                <button class="action-btn" style="background:#9b59b6; color:white" id="split-btn" onclick="bjAction('split')">SPLIT</button>
+            </div>
+        </div>
+        <div class="table">
+            <div class="roulette-wrap" id="roulette-ui"><div id="wheel"></div></div>
+            <div class="dice-wrap" id="dice-ui"><div id="die1" class="die">1</div><div id="die2" class="die">1</div></div>
+            <div class="result-msg" id="msg-overlay"></div>
+            <div id="dealer-hand" style="display:flex; gap:10px; min-height:115px;"></div>
+            <div style="flex-grow:1"></div>
+            <div id="player-hand" style="display:flex; gap:10px; min-height:115px;"></div>
+            <div style="opacity:0.5; margin-top:10px;">PUNTEGGIO: <span id="score-text">0</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let saldo = 0, gioco = '', manoP = [], manoD = [], isSplit = false;
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+        document.getElementById(id).classList.add('active-screen');
+        document.getElementById('home-btn').style.display = (id === 'home-screen') ? 'none' : 'block';
+    }
+
+    function deposit() {
+        let v = parseInt(document.getElementById('bank-input').value);
+        if(v > 0) { saldo += v; updateUI(); showScreen('home-screen'); }
+    }
+    function updateUI() { document.getElementById('balance-val').innerText = saldo.toLocaleString(); }
+
+    function initGame(g) {
+        gioco = g; showScreen('game-view');
+        document.getElementById('game-title').innerText = g;
+        document.getElementById('roulette-ui').style.display = (g==='ROU'?'block':'none');
+        document.getElementById('dice-ui').style.display = (g==='DICE'?'flex':'none');
+        document.getElementById('msg-overlay').innerText = '';
+        document.getElementById('player-hand').innerHTML = '';
+        document.getElementById('dealer-hand').innerHTML = '';
+        document.getElementById('score-text').innerText = '0';
+        document.getElementById('play-btn').style.display = 'block';
+        document.getElementById('bj-ctrls').style.display = 'none';
+        
+        let opt = document.getElementById('game-options');
+        if(g==='ROU') opt.innerHTML = '<select id="m-opt" class="bank-input" style="font-size:16px"><option value="R">ROSSO</option><option value="N">NERO</option></select>';
+        else if(g==='BAC') opt.innerHTML = '<select id="m-opt" class="bank-input" style="font-size:16px"><option value="P">PLAYER</option><option value="B">BANKER</option></select>';
+        else opt.innerHTML = '';
+    }
+
+    function createCard(n) {
+        if(n === 11) return `<div class="card">A♠<div class="ace-mid">♠</div></div>`;
+        return `<div class="card">${n}<div style="font-size:30px; text-align:center; margin-top:20px">${n}</div></div>`;
+    }
+
+    function getCard() { return Math.floor(Math.random()*10)+2; }
+    function getScore(h) {
+        let s = h.reduce((a,b)=>a+b,0), aces = h.filter(x=>x===11).length;
+        while(s > 21 && aces > 0) { s -= 10; aces--; }
+        return s;
+    }
+
+    function handlePlay() {
+        let bet = parseInt(document.getElementById('bet-field').value);
+        if(bet > saldo || bet <= 0) return alert("Fondi insufficienti in BANK!");
+        document.getElementById('msg-overlay').innerText = '';
+
+        if(gioco === 'BJ') {
+            manoP = [getCard(), getCard()]; manoD = [getCard(), getCard()];
+            renderBJ(false);
+            document.getElementById('play-btn').style.display = 'none';
+            document.getElementById('bj-ctrls').style.display = 'block';
+            document.getElementById('split-btn').style.display = (manoP[0]===manoP[1]?'block':'none');
+        } else if(gioco === 'ROU') {
+            const w = document.getElementById('wheel');
+            let d = 1800 + Math.random()*360;
+            w.style.transform = `rotate(${d}deg)`;
+            setTimeout(() => {
+                let n = Math.floor(Math.random()*37), col = (n%2===0?'N':'R');
+                document.getElementById('player-hand').innerHTML = createCard(n);
+                if(document.getElementById('m-opt').value === col) { saldo += bet; finish("VINCI!", "var(--green)"); }
+                else { saldo -= bet; finish("PERDI", "var(--red)"); }
+                w.style.transition = 'none'; w.style.transform = 'rotate(0deg)';
+                setTimeout(()=>w.style.transition='transform 4s cubic-bezier(0.1, 0, 0.1, 1)', 50);
+            }, 4000);
+        } else if(gioco === 'DICE') {
+            const d1 = document.getElementById('die1'), d2 = document.getElementById('die2');
+            d1.classList.add('rolling'); d2.classList.add('rolling');
+            setTimeout(() => {
+                d1.classList.remove('rolling'); d2.classList.remove('rolling');
+                let v1 = Math.floor(Math.random()*6)+1, v2 = Math.floor(Math.random()*6)+1;
+                d1.innerText = v1; d2.innerText = v2;
+                if(v1+v2 === 7 || v1+v2 === 11) { saldo += bet; finish("VINCI!", "var(--green)"); }
+                else { saldo -= bet; finish("PERDI", "var(--red)"); }
+            }, 1200);
+        } else if(gioco === 'BAC') {
+            let p = (getCard()+getCard())%10, b = (getCard()+getCard())%10;
+            document.getElementById('player-hand').innerHTML = createCard(p);
+            document.getElementById('dealer-hand').innerHTML = createCard(b);
+            if((document.getElementById('m-opt').value==='P' && p>b) || (document.getElementById('m-opt').value==='B' && b>p)) { saldo += bet; finish("VINCI!", "var(--green)"); }
+            else { saldo -= bet; finish("PERDI", "var(--red)"); }
+        }
+    }
+
+    function renderBJ(showAll) {
+        document.getElementById('player-hand').innerHTML = manoP.map(c=>createCard(c)).join('');
+        document.getElementById('score-text').innerText = getScore(manoP);
+        if(!showAll) document.getElementById('dealer-hand').innerHTML = createCard(manoD[0]) + `<div class="card" style="background:#222"></div>`;
+        else document.getElementById('dealer-hand').innerHTML = manoD.map(c=>createCard(c)).join('');
+    }
+
+    function bjAction(a) {
+        let bet = parseInt(document.getElementById('bet-field').value);
+        if(a==='hit') {
+            manoP.push(getCard()); renderBJ(false);
+            if(getScore(manoP)>21) { saldo -= bet; finish("SBALLATO", "var(--red)"); }
+        } else if(a==='double') {
+            if(saldo < bet*2) return alert("Saldo insufficiente!");
+            document.getElementById('bet-field').value = bet * 2;
+            manoP.push(getCard()); renderBJ(false);
+            if(getScore(manoP)>21) { saldo -= bet*2; finish("SBALLATO", "var(--red)"); } else bjAction('stand');
+        } else if(a==='split') {
+            isSplit = true; manoP = [manoP[0], getCard()]; // Logica semplificata split
+            renderBJ(false); document.getElementById('split-btn').style.display='none';
+        } else if(a==='stand') {
+            while(getScore(manoD)<17) manoD.push(getCard());
+            renderBJ(true);
+            let ps = getScore(manoP), ds = getScore(manoD);
+            let finalBet = parseInt(document.getElementById('bet-field').value);
+            if(ds>21 || ps>ds) { saldo += finalBet; finish("VINCI!", "var(--green)"); }
+            else if(ps===ds) finish("PAREGGIO", "#fff");
+            else { saldo -= finalBet; finish("PERDI", "var(--red)"); }
+        }
+    }
+
+    function finish(t,c) {
+        document.getElementById('msg-overlay').innerText = t;
+        document.getElementById('msg-overlay').style.color = c;
+        updateUI();
+        document.getElementById('play-btn').style.display = 'block';
+        document.getElementById('bj-ctrls').style.display = 'none';
+        document.getElementById('bet-field').disabled = false;
+    }
+</script>
+</body>
+</html>
