@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>LUXURY CASINO - ULTIMATE EDITION</title>
+    <style>
+        :root {
+            --bg-body: #07090c;
+            --bg-card: #12161b;
+            --bg-accent: #1e252d;
+            --gold: #ffb800;
+            --green: #00ff59;
+            --red: #ff3e3e;
+            --text: #ffffff;
+        }
+        body {
+            background: var(--bg-body);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        /* --- NAVBAR --- */
+        .navbar {
+            height: 70px;
+            background: #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            border-bottom: 2px solid var(--gold);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .logo { font-size: 22px; font-weight: 900; color: var(--gold); letter-spacing: 3px; }
+        .balance-box {
+            background: #111; padding: 8px 15px; border-radius: 8px;
+            border: 1px solid var(--gold); color: var(--gold); font-weight: bold; font-size: 18px;
+        }
+        /* --- SCREENS --- */
+        .screen { display: none; padding: 20px; text-align: center; min-height: 90vh; }
+        .active-screen { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* --- GRID --- */
+        .game-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; max-width: 1200px; margin: 40px auto;
+        }
+        .game-card {
+            background: var(--bg-card); padding: 40px; border-radius: 15px;
+            border: 1px solid var(--bg-accent); cursor: pointer; transition: 0.3s;
+        }
+        .game-card:hover { border-color: var(--gold); transform: translateY(-5px); box-shadow: 0 0 20px rgba(255,184,0,0.2); }
+        /* --- TABLE AREA --- */
+        .table-area {
+            background: radial-gradient(circle, #1a4d2e 0%, #081a0f 100%);
+            border: 8px solid #3d2b1f; border-radius: 50px;
+            padding: 30px; max-width: 900px; margin: 20px auto;
+            box-shadow: inset 0 0 100px #000; position: relative;
+        }
+        /* --- ROULETTE --- */
+        .roulette-container { position: relative; width: 260px; height: 260px; margin: 0 auto 30px; }
+        #wheel {
+            width: 100%; height: 100%; border-radius: 50%; border: 8px solid #222;
+            background: conic-gradient(#00ff59 0% 3%, #ff3e3e 3% 8%, #000 8% 13%, #ff3e3e 13% 18%, #000 18% 24%, #ff3e3e 24% 29%, #000 29% 35%, #ff3e3e 35% 40%, #000 40% 45%, #ff3e3e 45% 51%, #000 51% 56%, #ff3e3e 56% 62%, #000 62% 67%, #ff3e3e 67% 72%, #000 72% 78%, #ff3e3e 78% 83%, #000 83% 89%, #ff3e3e 89% 94%, #000 94% 100%);
+            transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);
+        }
+        #ball {
+            position: absolute; width: 12px; height: 12px; background: white;
+            border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -110px);
+            transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1); z-index: 10;
+        }
+        /* --- BLACKJACK CARDS --- */
+        .hand { display: flex; justify-content: center; gap: 10px; min-height: 120px; margin: 15px 0; padding: 10px; border-radius: 10px; }
+        .active-hand { border: 2px solid var(--gold); background: rgba(255, 184, 0, 0.1); }
+        .card {
+            width: 75px; height: 105px; background: white; border-radius: 8px;
+            color: black; position: relative; padding: 5px; font-weight: 900;
+            font-size: 14px; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+        }
+        .card.red { color: #ff3e3e; }
+        .card-suit { font-size: 28px; }
+        /* --- SLOT --- */
+        .reels { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .reel { background: #000; border: 2px solid var(--gold); width: 70px; font-size: 45px; border-radius: 10px; padding: 10px; }
+        .spinning { animation: spin 0.1s linear infinite; }
+        @keyframes spin { 0% { transform: translateY(-3px); } 50% { transform: translateY(3px); } 100% { transform: translateY(-3px); } }
+        /* --- CONTROLS --- */
+        button { padding: 12px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin: 5px; text-transform: uppercase; }
+        .btn-gold { background: var(--gold); color: black; }
+        .btn-green { background: var(--green); color: black; }
+        .btn-red { background: var(--red); color: white; }
+        .btn-blue { background: #3498db; color: white; }
+        .btn-home { background: #444; color: white; }
+        input, select { background: #000; color: var(--gold); border: 1px solid var(--gold); padding: 10px; border-radius: 5px; text-align: center; }
+       
+        .hidden { display: none !important; }
+        .label { color: var(--gold); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <div class="logo">LUXURY CASINO</div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <button class="btn-home" onclick="goToHome()">🏠 HOME</button>
+        <div class="balance-box">$ <span id="balance-val">0</span></div>
+    </div>
+</div>
+
+<div id="home-screen" class="screen active-screen">
+    <div class="game-grid">
+        <div class="game-card" onclick="openBJ()">🃏 BLACKJACK</div>
+        <div class="game-card" onclick="showScreen('roulette-screen')">🎡 ROULETTE</div>
+        <div class="game-card" onclick="showScreen('slot-screen')">🎰 SLOT</div>
+        <div class="game-card" onclick="showScreen('mines-screen')">💣 MINES</div>
+        <div class="game-card" onclick="showScreen('cases-screen')">📦 CS2 CASES</div>
+        <div class="game-card" onclick="showScreen('bank-screen')">🏦 BANK</div>
+    </div>
+</div>
+
+<div id="bank-screen" class="screen">
+    <div style="max-width: 400px; margin: 50px auto; background: var(--bg-card); padding: 40px; border-radius: 20px; border: 2px solid var(--gold);">
+        <h2 style="color:var(--gold)">BANCO CENTRALE</h2>
+        <input type="number" id="bank-input" placeholder="Importo $">
+        <br><br>
+        <button class="btn-green" onclick="deposit()">DEPOSITA FONDI</button>
+    </div>
+</div>
+
+<div id="roulette-screen" class="screen">
+    <div class="table-area">
+        <div class="roulette-container"><div id="wheel"></div><div id="ball"></div></div>
+        <div class="controls">
+            <select id="rou-type"><option value="color">COLORE (2x)</option><option value="number">NUMERO (36x)</option></select>
+            <select id="rou-color"><option value="red">ROSSO</option><option value="black">NERO</option></select>
+            <input type="number" id="rou-num" placeholder="#" style="width: 60px;">
+            <br><br>
+            <input type="number" id="rou-bet" placeholder="Puntata $">
+            <button class="btn-green" onclick="playRoulette()">GIRA LA RUOTA</button>
+        </div>
+        <h2 id="rou-res"></h2>
+    </div>
+</div>
+
+<div id="blackjack-screen" class="screen">
+    <div class="table-area">
+        <div class="label">Banco</div>
+        <div id="bj-dealer-hand" class="hand"></div>
+       
+        <div style="display: flex; justify-content: center; gap: 30px;">
+            <div>
+                <div id="score-0" class="label">Mano 1 (0)</div>
+                <div id="bj-player-hand-0" class="hand"></div>
+            </div>
+            <div id="bj-split-container" class="hidden">
+                <div id="score-1" class="label">Mano 2 (0)</div>
+                <div id="bj-player-hand-1" class="hand"></div>
+            </div>
+        </div>
+        <div class="controls">
+            <div id="bj-pre-game">
+                <input type="number" id="bj-bet" placeholder="Puntata $">
+                <button class="btn-green" onclick="startBJ()">GIOCA</button>
+            </div>
+            <div id="bj-actions" class="hidden">
+                <button class="btn-gold" onclick="bjHit()">CARTA</button>
+                <button class="btn-red" onclick="bjStand()">STAI</button>
+                <button id="btn-double" class="btn-blue" onclick="bjDouble()">DOUBLE</button>
+                <button id="btn-split" class="btn-blue hidden" onclick="bjSplit()">SPLIT</button>
+            </div>
+        </div>
+        <h2 id="bj-msg"></h2>
+    </div>
+</div>
+
+<div id="slot-screen" class="screen">
+    <div class="table-area">
+        <div class="reels"><div class="reel" id="r1">🍒</div><div class="reel" id="r2">🍋</div><div class="reel" id="r3">⭐</div></div>
+        <div class="controls">
+            <input type="number" id="slot-bet" placeholder="Puntata $">
+            <button class="btn-green" onclick="playSlot()">TIRA LA LEVA</button>
+        </div>
+        <h2 id="slot-res"></h2>
+    </div>
+</div>
+
+<div id="mines-screen" class="screen">
+    <div class="table-area" style="max-width: 700px;">
+        <h2 style="color: var(--gold);">MINES</h2>
+       
+        <div class="controls" style="margin-bottom: 25px;">
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                <div>
+                    <div class="label">Puntata $</div>
+                    <input type="number" id="mines-bet" placeholder="Puntata" min="1" value="10">
+                </div>
+                <div>
+                    <div class="label">Numero mine</div>
+                    <select id="mines-count">
+                        <option value="3">3 mine</option>
+                        <option value="5" selected>5 mine</option>
+                        <option value="8">8 mine</option>
+                        <option value="12">12 mine</option>
+                        <option value="16">16 mine</option>
+                        <option value="20">20 mine</option>
+                    </select>
+                </div>
+            </div>
+           
+            <br>
+            <button class="btn-green" onclick="startMines()" id="mines-start-btn">INIZIA PARTITA</button>
+            <button class="btn-gold hidden" onclick="cashoutMines()" id="mines-cashout-btn">CASH OUT</button>
+        </div>
+        <div id="mines-grid" style="
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            max-width: 420px;
+            margin: 30px auto;
+        "></div>
+        <h2 id="mines-result" style="min-height: 1.4em;"></h2>
+        <div id="mines-multiplier" style="font-size: 1.4em; color: var(--gold);"></div>
+    </div>
+</div>
+
+<div id="cases-screen" class="screen">
+    <div class="table-area" style="max-width: 900px; background: linear-gradient(135deg, #1a1a2e, #0f0f1a);">
+        <h2 style="color: var(--gold); margin-bottom: 10px;">CS2 CASE OPENING</h2>
+        <p style="color: #aaa; margin-bottom: 25px;">Apri una cassa e prova a vincere skin rare!</p>
+
+        <div class="controls" style="margin: 25px auto; max-width: 500px;">
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                <div>
+                    <div class="label">Cassa</div>
+                    <select id="case-type">
+                        <option value="dreams">Dreams & Nightmares Case</option>
+                        <option value="revolution" selected>Revolution Case</option>
+                        <option value="recoil">Recoil Case</option>
+                        <option value="snakebite">Snakebite Case</option>
+                        <option value="prisma2">Prisma 2 Case</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="label">Puntata ($)</div>
+                    <input type="number" id="case-bet" placeholder="10" min="1" value="10">
+                </div>
+            </div>
+
+            <button class="btn-green" onclick="openCase()" id="case-open-btn">APRI CASO</button>
+            <button class="btn-red hidden" onclick="goToHome()" id="case-again-btn">NUOVA APERTURA</button>
+        </div>
+
+        <div id="case-result" style="min-height: 180px; font-size: 1.4em; margin: 30px 0;"></div>
+
+        <div id="case-animation" style="display: none; height: 180px; overflow: hidden; position: relative; border: 3px solid var(--gold); border-radius: 12px; background: #000;">
+            <div id="skin-reveal" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 2.8em; font-weight: bold; padding: 30px 60px; border-radius: 12px; white-space: nowrap;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let saldo = 0;
+    // Blackjack State
+    let bjHands = [[]], bjDealerHand = [], bjBets = [0], bjActiveIdx = 0, bjIsSplit = false;
+    // Mines State
+    let minesBet = 0;
+    let minesCount = 5;
+    let minesGrid = [];
+    let revealedCount = 0;
+    let gameActive = false;
+
+    function updateUI() {
+        document.getElementById('balance-val').innerText = saldo.toLocaleString();
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+        document.getElementById(id).classList.add('active-screen');
+    }
+
+    function goToHome() { showScreen('home-screen'); }
+
+    function deposit() {
+        let v = parseInt(document.getElementById('bank-input').value);
+        if (v > 0) {
+            saldo += v;
+            updateUI();
+            goToHome();
+            document.getElementById('bank-input').value = "";
+        }
+    }
+
+    // ────────────────────────────────────────────────
+    // ROULETTE
+    // ────────────────────────────────────────────────
+    function playRoulette() {
+        let betInput = document.getElementById('rou-bet').value;
+        let bet = parseInt(betInput);
+        if (betInput === "" || isNaN(bet) || bet <= 0 || bet > saldo) return alert("Puntata non valida!");
+       
+        saldo -= bet; updateUI();
+        const wheel = document.getElementById('wheel'), ball = document.getElementById('ball');
+        let deg = 3600 + Math.random() * 360;
+        wheel.style.transform = `rotate(${deg}deg)`;
+        ball.style.transform = `translate(-50%, -50%) rotate(-${deg}deg) translateY(-110px)`;
+        setTimeout(() => {
+            let n = Math.floor(Math.random() * 37);
+            let isRed = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(n);
+            let color = (n === 0) ? "green" : (isRed ? "red" : "black");
+            let type = document.getElementById('rou-type').value, win = false;
+            if (type === "color") {
+                if (document.getElementById('rou-color').value === color) { win = true; saldo += (bet * 2); }
+            } else {
+                if (parseInt(document.getElementById('rou-num').value) === n) { win = true; saldo += (bet * 36); }
+            }
+            document.getElementById('rou-res').innerText = (win ? "VINTO! " : "PERSO! ") + n + " (" + color.toUpperCase() + ")";
+            document.getElementById('rou-res').style.color = win ? "var(--green)" : "var(--red)";
+            updateUI();
+        }, 5000);
+    }
+
+    // ────────────────────────────────────────────────
+    // BLACKJACK
+    // ────────────────────────────────────────────────
+    function openBJ() {
+        showScreen('blackjack-screen');
+        resetBJUI();
+    }
+
+    function resetBJUI() {
+        document.getElementById('bj-pre-game').classList.remove('hidden');
+        document.getElementById('bj-actions').classList.add('hidden');
+        document.getElementById('bj-msg').innerText = "";
+        document.getElementById('bj-dealer-hand').innerHTML = "";
+        document.getElementById('bj-player-hand-0').innerHTML = "";
+        document.getElementById('bj-player-hand-1').innerHTML = "";
+        document.getElementById('bj-split-container').classList.add('hidden');
+    }
+
+    function createCard() {
+        const suits = ['♠', '♥', '♦', '♣'];
+        const vals = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+        const v = vals[Math.floor(Math.random()*vals.length)];
+        const s = suits[Math.floor(Math.random()*suits.length)];
+        let p = isNaN(v) ? (v === 'A' ? 11 : 10) : parseInt(v);
+        const red = (s === '♥' || s === '♦');
+        const ui = `<div class="card ${red?'red':''}"><div>${v}</div><div class="card-suit">${s}</div><div style="transform:rotate(180deg)">${v}</div></div>`;
+        return { ui, p, v };
+    }
+
+    function getBJScore(h) {
+        let s = h.reduce((a, b) => a + b.p, 0);
+        let aces = h.filter(c => c.v === 'A').length;
+        while (s > 21 && aces > 0) { s -= 10; aces--; }
+        return s;
+    }
+
+    function startBJ() {
+        let b = parseInt(document.getElementById('bj-bet').value);
+        if (isNaN(b) || b <= 0 || b > saldo) return alert("Scommessa non valida!");
+       
+        saldo -= b; bjBets = [b]; bjHands = [[createCard(), createCard()]];
+        bjDealerHand = [createCard(), createCard()];
+        bjActiveIdx = 0; bjIsSplit = false; updateUI();
+        document.getElementById('bj-pre-game').classList.add('hidden');
+        document.getElementById('bj-actions').classList.remove('hidden');
+        document.getElementById('btn-double').classList.remove('hidden');
+       
+        if (bjHands[0][0].v === bjHands[0][1].v) {
+            document.getElementById('btn-split').classList.remove('hidden');
+        } else {
+            document.getElementById('btn-split').classList.add('hidden');
+        }
+       
+        renderBJ();
+    }
+
+    function renderBJ() {
+        document.getElementById('bj-player-hand-0').innerHTML = bjHands[0].map(c => c.ui).join('');
+        document.getElementById('score-0').innerText = "Mano 1 (" + getBJScore(bjHands[0]) + ")";
+        document.getElementById('bj-player-hand-0').classList.toggle('active-hand', bjActiveIdx === 0 && bjIsSplit);
+        if (bjIsSplit) {
+            document.getElementById('bj-player-hand-1').innerHTML = bjHands[1].map(c => c.ui).join('');
+            document.getElementById('score-1').innerText = "Mano 2 (" + getBJScore(bjHands[1]) + ")";
+            document.getElementById('bj-player-hand-1').classList.toggle('active-hand', bjActiveIdx === 1);
+        }
+        document.getElementById('bj-dealer-hand').innerHTML = bjDealerHand[0].ui + `<div class="card" style="background:#222"></div>`;
+    }
+
+    function bjHit() {
+        document.getElementById('btn-double').classList.add('hidden');
+        document.getElementById('btn-split').classList.add('hidden');
+        bjHands[bjActiveIdx].push(createCard());
+        renderBJ();
+        if (getBJScore(bjHands[bjActiveIdx]) > 21) bjStand();
+    }
+
+    function bjDouble() {
+        if (saldo < bjBets[bjActiveIdx]) return alert("Saldo basso!");
+        saldo -= bjBets[bjActiveIdx];
+        bjBets[bjActiveIdx] *= 2;
+        updateUI();
+        bjHands[bjActiveIdx].push(createCard());
+        renderBJ();
+        bjStand();
+    }
+
+    function bjSplit() {
+        if (saldo < bjBets[0]) return alert("Saldo basso!");
+        saldo -= bjBets[0];
+        bjBets.push(bjBets[0]);
+        updateUI();
+        bjIsSplit = true;
+        bjHands.push([bjHands[0].pop()]);
+        bjHands[0].push(createCard());
+        bjHands[1].push(createCard());
+        document.getElementById('bj-split-container').classList.remove('hidden');
+        document.getElementById('btn-split').classList.add('hidden');
+        renderBJ();
+    }
+
+    function bjStand() {
+        if (bjIsSplit && bjActiveIdx === 0) {
+            bjActiveIdx = 1;
+            renderBJ();
+            return;
+        }
+        finishBJ();
+    }
+
+    function finishBJ() {
+        while (getBJScore(bjDealerHand) < 17) bjDealerHand.push(createCard());
+        document.getElementById('bj-dealer-hand').innerHTML = bjDealerHand.map(c => c.ui).join('');
+        let ds = getBJScore(bjDealerHand);
+        let finalMsg = "";
+        bjHands.forEach((h, i) => {
+            let ps = getBJScore(h);
+            if (ps > 21) finalMsg += `M${i+1}: PERSO | `;
+            else if (ds > 21 || ps > ds) {
+                saldo += bjBets[i] * 2;
+                finalMsg += `M${i+1}: VINTO | `;
+            }
+            else if (ps === ds) {
+                saldo += bjBets[i];
+                finalMsg += `M${i+1}: PUSH | `;
+            }
+            else finalMsg += `M${i+1}: PERSO | `;
+        });
+        document.getElementById('bj-msg').innerText = finalMsg;
+        document.getElementById('bj-actions').classList.add('hidden');
+        document.getElementById('bj-pre-game').classList.remove('hidden');
+        updateUI();
+    }
+
+    // ────────────────────────────────────────────────
+    // SLOT
+    // ────────────────────────────────────────────────
+    function playSlot() {
+        let bInput = document.getElementById('slot-bet').value;
+        let b = parseInt(bInput);
+        if (bInput === "" || isNaN(b) || b <= 0 || b > saldo) return alert("Errore puntata!");
+       
+        saldo -= b; updateUI();
+        const r = [document.getElementById('r1'), document.getElementById('r2'), document.getElementById('r3')];
+        const s = ["🍒","🍋","⭐","💎","7"];
+        r.forEach(el => el.classList.add('spinning'));
+        setTimeout(() => {
+            let res = r.map(el => {
+                let sym = s[Math.floor(Math.random()*5)];
+                el.innerText = sym;
+                el.classList.remove('spinning');
+                return sym;
+            });
+            if (res[0]===res[1] && res[1]===res[2]) {
+                saldo += b*10;
+                document.getElementById('slot-res').innerText = "JACKPOT! 10x";
+            }
+            else if (res[0]===res[1] || res[1]===res[2] || res[0]===res[2]) {
+                saldo += b*2;
+                document.getElementById('slot-res').innerText = "WIN! 2x";
+            }
+            else {
+                document.getElementById('slot-res').innerText = "PERSO";
+            }
+            updateUI();
+        }, 1500);
+    }
+
+    // ────────────────────────────────────────────────
+    // MINES
+    // ────────────────────────────────────────────────
+    function startMines() {
+        const betInput = document.getElementById('mines-bet').value;
+        minesBet = parseInt(betInput);
+        minesCount = parseInt(document.getElementById('mines-count').value);
+        if (isNaN(minesBet) || minesBet <= 0 || minesBet > saldo) {
+            alert("Puntata non valida!");
+            return;
+        }
+        saldo -= minesBet;
+        updateUI();
+        revealedCount = 0;
+        gameActive = true;
+        document.getElementById('mines-result').innerText = "";
+        document.getElementById('mines-multiplier').innerText = "";
+        document.getElementById('mines-start-btn').classList.add('hidden');
+        document.getElementById('mines-cashout-btn').classList.remove('hidden');
+        minesGrid = Array(25).fill("safe");
+        let placed = 0;
+        while (placed < minesCount) {
+            let idx = Math.floor(Math.random() * 25);
+            if (minesGrid[idx] === "safe") {
+                minesGrid[idx] = "mine";
+                placed++;
+            }
+        }
+        const gridEl = document.getElementById('mines-grid');
+        gridEl.innerHTML = "";
+        for (let i = 0; i < 25; i++) {
+            const tile = document.createElement('div');
+            tile.style.cssText = `
+                width: 70px; height: 70px;
+                background: #1e252d;
+                border: 2px solid #444;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 32px;
+                cursor: pointer;
+                transition: all 0.2s;
+            `;
+            tile.dataset.index = i;
+            tile.innerHTML = "❓";
+            tile.onclick = () => clickMineTile(i, tile);
+            gridEl.appendChild(tile);
+        }
+    }
+
+    function clickMineTile(idx, tileEl) {
+        if (!gameActive) return;
+        if (tileEl.innerHTML !== "❓") return;
+        if (minesGrid[idx] === "mine") {
+            tileEl.innerHTML = "💣";
+            tileEl.style.background = "#661111";
+            tileEl.style.borderColor = "#ff3e3e";
+            gameActive = false;
+            document.getElementById('mines-result').innerText = "BOOM! Hai perso la puntata.";
+            document.getElementById('mines-result').style.color = "var(--red)";
+            endMinesGame(false);
+        } else {
+            tileEl.innerHTML = "⭐";
+            tileEl.style.background = "#1a3d1a";
+            tileEl.style.borderColor = "var(--green)";
+            revealedCount++;
+            const multiplier = getMinesMultiplier(revealedCount, minesCount);
+            document.getElementById('mines-multiplier').innerText =
+                `Moltiplicatore attuale: ×${multiplier.toFixed(2)}`;
+            tileEl.style.cursor = "default";
+        }
+    }
+
+    function cashoutMines() {
+        if (!gameActive || revealedCount === 0) return;
+        gameActive = false;
+        const multiplier = getMinesMultiplier(revealedCount, minesCount);
+        const win = Math.round(minesBet * multiplier);
+        saldo += win;
+        updateUI();
+        document.getElementById('mines-result').innerText =
+            `CASH OUT! Hai vinto $${win.toLocaleString()} (${multiplier.toFixed(2)}×)`;
+        document.getElementById('mines-result').style.color = "var(--green)";
+        endMinesGame(true);
+    }
+
+    function endMinesGame(won) {
+        document.getElementById('mines-start-btn').classList.remove('hidden');
+        document.getElementById('mines-cashout-btn').classList.add('hidden');
+        document.querySelectorAll('#mines-grid > div').forEach((tile, i) => {
+            if (minesGrid[i] === "mine" && tile.innerHTML === "❓") {
+                tile.innerHTML = "💣";
+                tile.style.background = "#661111";
+                tile.style.borderColor = "#ff3e3e";
+            }
+            tile.onclick = null;
+            tile.style.cursor = "default";
+        });
+    }
+
+    function getMinesMultiplier(revealed, mines) {
+        if (revealed === 0) return 1;
+        const safe = 25 - mines;
+        return 1 + (revealed / safe) * (30 - mines * 1.2);
+    }
+
+    // ────────────────────────────────────────────────
+    // CS2 CASES
+    // ────────────────────────────────────────────────
+    const caseData = {
+        "dreams": {
+            name: "Dreams & Nightmares Case",
+            price: 1.5,
+            drops: [
+                { name: "USP-S | Printstream", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 120 },
+                { name: "AK-47 | Nightwish", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 95 },
+                { name: "MP9 | Starlight Protector", rarity: "Classified", color: "#d32ce6", chance: 3.2, multiplier: 25 },
+                { name: "Five-SeveN | Scrawl", rarity: "Restricted", color: "#8847ff", chance: 15.98, multiplier: 6 },
+                { name: "MAC-10 | Sakkaku", rarity: "Restricted", color: "#8847ff", chance: 15.98, multiplier: 5 },
+                { name: "P2000 | Gnarled", rarity: "Mil-Spec", color: "#4b69ff", chance: 63.56, multiplier: 1.8 }
+            ]
+        },
+        "revolution": {
+            name: "Revolution Case",
+            price: 0.8,
+            drops: [
+                { name: "AK-47 | Head Shot", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 140 },
+                { name: "M4A4 | Temukau", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 110 },
+                { name: "P250 | Re.built", rarity: "Classified", color: "#d32ce6", chance: 3.2, multiplier: 28 },
+                { name: "P90 | Neoqueen", rarity: "Classified", color: "#d32ce6", chance: 3.2, multiplier: 22 },
+                { name: "UMP-45 | Wild Child", rarity: "Restricted", color: "#8847ff", chance: 15.98, multiplier: 7 },
+                { name: "R8 Revolver | Llama Cannon", rarity: "Restricted", color: "#8847ff", chance: 15.98, multiplier: 5.5 },
+                { name: "SCAR-20 | Fragments", rarity: "Mil-Spec", color: "#4b69ff", chance: 63.56, multiplier: 2 }
+            ]
+        },
+        "recoil": {
+            name: "Recoil Case",
+            price: 0.6,
+            drops: [
+                { name: "Glock-18 | Vogue", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 85 },
+                { name: "M4A4 | The Coalition", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 130 },
+                { name: "USP-S | Ticket to Hell", rarity: "Classified", color: "#d32ce6", chance: 3.2, multiplier: 30 },
+                { name: "SG 553 | Integrale", rarity: "Classified", color: "#d32ce6", chance: 3.2, multiplier: 24 },
+                { name: "P250 | Vino Primo", rarity: "Restricted", color: "#8847ff", chance: 15.98, multiplier: 8 },
+                { name: "MAC-10 | Disco Tech", rarity: "Restricted", color: "#8847ff", chance: 15.98, multiplier: 6 }
+            ]
+        },
+        "snakebite": {
+            name: "Snakebite Case",
+            price: 0.4,
+            drops: [
+                { name: "AK-47 | Slate", rarity: "Classified", color: "#d32ce6", chance: 3.2, multiplier: 35 },
+                { name: "USP-S | The Traitor", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 95 },
+                { name: "Desert Eagle | Printstream", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 150 },
+                { name: "Negev | Power Loader", rarity: "Restricted", color: "#8847ff", chance: 15.98, multiplier: 7 }
+            ]
+        },
+        "prisma2": {
+            name: "Prisma 2 Case",
+            price: 0.35,
+            drops: [
+                { name: "M4A1-S | Player Two", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 110 },
+                { name: "Glock-18 | Bullet Queen", rarity: "Covert", color: "#ff3e3e", chance: 0.64, multiplier: 90 }
+            ]
+        }
+    };
+
+    function openCase() {
+        const betInput = document.getElementById('case-bet').value;
+        let bet = parseInt(betInput);
+        if (isNaN(bet) || bet < 1 || bet > saldo) {
+            alert("Puntata non valida!");
+            return;
+        }
+
+        const caseKey = document.getElementById('case-type').value;
+        const selectedCase = caseData[caseKey];
+        if (!selectedCase) return;
+
+        saldo -= bet;
+        updateUI();
+
+        document.getElementById('case-open-btn').classList.add('hidden');
+        document.getElementById('case-again-btn').classList.add('hidden');
+        document.getElementById('case-result').innerText = `Apertura ${selectedCase.name} in corso...`;
+        document.getElementById('case-animation').style.display = 'block';
+        document.getElementById('skin-reveal').innerText = "SCRATCHING...";
+
+        setTimeout(() => {
+            let rand = Math.random() * 100;
+            let cumulative = 0;
+            let wonSkin = null;
+
+            for (let drop of selectedCase.drops) {
+                cumulative += drop.chance;
+                if (rand <= cumulative) {
+                    wonSkin = drop;
+                    break;
+                }
+            }
+            if (!wonSkin) wonSkin = selectedCase.drops[selectedCase.drops.length - 1];
+
+            const winAmount = Math.round(bet * wonSkin.multiplier);
+            saldo += winAmount;
+            updateUI();
+
+            const color = wonSkin.color || '#ffffff';
+            document.getElementById('skin-reveal').style.background = color;
+            document.getElementById('skin-reveal').style.color = (wonSkin.rarity === "Covert") ? "#000" : "#fff";
+            document.getElementById('skin-reveal').innerText = `${wonSkin.name} (${wonSkin.rarity}) → +$${winAmount.toLocaleString()}`;
+
+            document.getElementById('case-result').innerHTML = 
+                `Hai aperto una <b>${selectedCase.name}</b><br>` +
+                `Risultato: <span style="color:${color}">${wonSkin.name}</span> (${wonSkin.rarity})<br>` +
+                (winAmount > bet ? `Vinto: +$${winAmount.toLocaleString()} (${wonSkin.multiplier}x)` : "Perso (skin di basso valore)");
+
+            document.getElementById('case-again-btn').classList.remove('hidden');
+        }, 2200);
+    }
+</script>
+</body>
+</html>
