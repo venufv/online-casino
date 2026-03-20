@@ -278,7 +278,7 @@
 
     // Funzione PAYPAL spostata qui (livello globale)
     function goToPaypal() {
-        window.open("https://streamelements.com/venuxfv/tip", "_blank");
+        window.open("https://www.paypal.com/paypalme/LorenzoVenuti", "_blank");
     }
 
     // ────────────────────────────────────────────────
